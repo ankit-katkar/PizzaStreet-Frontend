@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import AppRouting from './AppRouting'
+import Header from './shared/component/header'
+import Footer from './shared/component/footer'
 
 function App() {
-
   return (
     <>
-    <AppRouting />
+      <Header />
+      <AppRouting />
+      <Footer />
     </>
   )
 }
