@@ -1,110 +1,92 @@
-import React, { useState } from "react";
-import { ShoppingCart, Star } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { ShoppingCart, Star, IndianRupee, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
+import httpService from '../../../shared/services/httpService.js'
+import apiConfig from "../config/apiConfig.js";
+import { useDispatch, useSelector } from "react-redux";
+import { addItem, removeItem } from "../../../redux/slice.js";
+import loginHttpService from '../../auth/service/loginHttpSercice.js'
 
-import pizza1 from "../../../assets/img/01.png";
-import pizza2 from "../../../assets/img/02.png";
-import pizza3 from "../../../assets/img/03.png";
-import pizza4 from "../../../assets/img/04.png";
 
 const categories = [
-  "All",
-  "Our Special",
-  "Pizza",
-  "Burgers",
-  "Slides",
-  "Pasta",
-  "Cold Drinks",
+  { name: "All", value: "All" },
+  { name: "Our Special", value: "OurSpecial" },
+  { name: "Pizza", value: "Pizza" },
+  { name: "Burger", value: "Burger" },
+  { name: "Desserts", value: "Desserts" },
+  { name: "Cold Drinks", value: "coldDrinks" },
 ];
 
-const menuData = [
-  {
-    id: 1,
-    image: pizza1,
-    category: "Pizza",
-    name: "Italian Cheese Pizza",
-    rating: 4.8,
-    price: "$25",
-    description: "Loaded with extra cheese, crispy crust, premium toppings, and authentic Italian flavor for pizza lovers.",
-  },
-  {
-    id: 2,
-    image: pizza2,
-    category: "Our Special",
-    name: "Veggie Supreme Pizza",
-    rating: 4.6,
-    price: "$20",
-    description: "Fresh vegetables mixed with mozzarella cheese and special sauces baked perfectly for healthy food lovers.",
-  },
-  {
-    id: 3,
-    image: pizza3,
-    category: "Pasta",
-    name: "Creamy Pasta",
-    rating: 4.7,
-    price: "$18",
-    description: "Creamy white sauce pasta with fresh herbs, premium cheese, and delicious Italian seasoning taste.",
-  },
-  {
-    id: 4,
-    image: pizza4,
-    category: "Burgers",
-    name: "Chicken Burger",
-    rating: 4.5,
-    price: "$15",
-    description: "Juicy chicken burger with crispy layers, fresh lettuce, cheese, and premium burger sauce.",
-  },
-  {
-    id: 5,
-    image: pizza2,
-    category: "Pizza",
-    name: "Spicy Pizza",
-    rating: 4.9,
-    price: "$28",
-    description: "Spicy loaded pizza with fresh vegetables, chicken toppings, mozzarella cheese, and crispy crust.",
-  },
-  {
-    id: 6,
-    image: pizza1,
-    category: "Cold Drinks",
-    name: "Cold Coffee",
-    rating: 4.4,
-    price: "$10",
-    description: "Refreshing cold coffee with chocolate flavor, creamy texture, and chilled premium milk taste.",
-  },
-  {
-    id: 7,
-    image: pizza3,
-    category: "Slides",
-    name: "French Fries",
-    rating: 4.3,
-    price: "$12",
-    description: "Crispy golden fries served with tomato sauce and special seasoning for amazing snack experience.",
-  },
-  {
-    id: 8,
-    image: pizza4,
-    category: "Our Special",
-    name: "Special Combo",
-    rating: 5.0,
-    price: "$35",
-    description: "Special food combo with pizza, fries, burger, and drinks specially designed for food lovers.",
-  },
-];
 
 export default function OurMenuPage() {
-  const [activeCategory, setActiveCategory] = useState("All");
+  const userId = localStorage.getItem('loginUserId')
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const cartSelector = useSelector((state) => state.cart.item);
 
-  const filteredMenu = activeCategory === "All" 
-  ? menuData : menuData.filter((item) => item.category === activeCategory);
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [productData, setProductData] = useState([]);
 
+  useEffect(() => {
+    getProductData();
+  }, [activeCategory])
 
-  function onViewProduct(productId){
-    console.warn('btn clicked for product:', productId);
+  const getProductData = async () => {
+    const response = await httpService.getService(apiConfig.getProductByCategory + activeCategory);
+    setProductData(response?.data?.docs || [])
+  }
+
+  const onViewProduct = (productId) => {
     navigate('/productDetail/' + productId);
   };
+
+  const addToCart = async (e, item) => {
+    e.stopPropagation();
+    const token = localStorage.getItem('authToken')
+    if (token) {
+      const getContactNumber = localStorage.getItem('contactNumber')
+      const payload = {
+        "cartData": [
+          {
+            userId: userId,
+            "productId": item._id,
+            "contactNumber": getContactNumber,
+            "productImage": item.productImage,
+            "productName": item.productName,
+            "productPrice": item.productPrice,
+            "discount": item.discount,
+            "discountPrice": item.discountPrice,
+            "category": item.category,
+            "foodType" : item.foodType,
+            "description": item.description,
+            "quantity": 1
+          }
+        ]
+      }
+      const response = await httpService.postService(apiConfig.addToCart, payload);
+      if (response.status == true) {
+        dispatch(addItem(item))
+      }
+    } else {
+      dispatch(addItem(item))
+    } 
+  }
+
+  const removeToCart = async (e, item) => {
+    e.stopPropagation();
+    const token = localStorage.getItem('authToken')
+    const itemId = item.productId || item._id
+
+    if (token) {
+      const response = await httpService.deleteService(apiConfig.removeToCart + itemId);
+      if (response.status == true) {
+        dispatch(removeItem({ _id: itemId, productId: itemId }))
+      }
+    } else {
+      dispatch(removeItem({ _id: itemId, productId: itemId }))
+    }
+  }
 
 
   return (
@@ -139,16 +121,15 @@ export default function OurMenuPage() {
             whileHover={{ scale: 1.05, y: -3 }}
             whileTap={{ scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            onClick={() => setActiveCategory(category)}
+            onClick={() => setActiveCategory(category.value)}
             className={`px-6 py-3 rounded-full text-sm md:text-base border transition-all duration-300 poppins_medium relative overflow-hidden
 
-            ${
-              activeCategory === category
+            ${activeCategory === category.name
                 ? "bg-red-600 border-red-600 text-white poppins_regular shadow-lg shadow-red-200"
                 : "bg-white border-gray-200 text-gray-700 hover:border-red-500 hover:text-red-600 poppins_regular"
-            }`}
+              }`}
           >
-            {category}
+            {category.name}
           </motion.button>
         ))}
       </motion.div>
@@ -160,53 +141,66 @@ export default function OurMenuPage() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 40 }}
           transition={{ duration: 0.5 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-16"
-        >
-          {filteredMenu.map((item, index) => (
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-16">
+          {productData.map((item, index) => (
             <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 60 }}
+              key={item._id}
+              initial={{ opacity: 0, y: 70 }}
               whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
               transition={{
                 duration: 0.5,
                 delay: index * 0.08,
               }}
-              viewport={{ once: true }}
               whileHover={{ y: -10 }}
-              className="group bg-white rounded-[30px] border border-gray-200 hover:border-red-200 shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col min-h-130 relative"
-            onClick={() => onViewProduct(item.id)}
+              className="bg-white rounded-3xl border border-gray-100 shadow-lg hover:shadow-2xl overflow-hidden group transition-all duration-300 flex flex-col"
+              onClick={() => onViewProduct(item._id)}
             >
-              <div className="absolute top-0 right-0 w-40 h-40 bg-red-50 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
-              <div  className="h-65 flex justify-center items-center p-6 relative cursor-pointer">
-                <motion.img
-                  src={item.image}
-                  alt={item.name}
-                  whileHover={{
-                    rotate: 12,
-                    scale: 1.12,
-                    y: -12,    
-                  }}
-                  transition={{ duration: 0.4 }}
-                  className="w-48 md:w-52 object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.15)] relative z-10"
+              <div className="relative h-64 flex justify-center items-center overflow-hidden p-6">
+                <img
+                  src={item.productImage.imageUrl}
+                  alt={item.productImage.imageName}
+                  className={`w-52 object-contain transition-all duration-500 group-hover:scale-110
+          ${item.category?.toLowerCase() === "pizza"
+                      ? "group-hover:rotate-12"
+                      : ""
+                    }`}
                 />
               </div>
-              
-              <div className="px-6 pb-8 flex flex-col flex-1 relative z-10">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-lg mt-5 text-gray-900 poppins_semiBold leading-snug">
-                    {item.name}
-                    </h3>
+
+              <div className="p-6 flex flex-col flex-1">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        size={17}
+                        fill={i < item.rating ? "currentColor" : "none"}
+                        className={
+                          i < item.rating
+                            ? "text-yellow-400"
+                            : "text-gray-300"
+                        }
+                      />
+                    ))}
+                  </div>
+
+                  <div
+                    className={`text-xs sm:text-sm px-4 py-1.5 rounded-full min-w-[85px] sm:min-w-[95px] inline-flex items-center justify-center whitespace-nowrap font-medium
+                    ${item.foodType === "VEG" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700" }`}
+                  >
+                    {item.foodType}
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-1 bg-yellow-50 px-3 py-1 rounded-full poppins_regular w-max mt-2">
-                  <Star size={16} fill="currentColor" className="text-yellow-500" />
-                  <span className="text-sm text-gray-700 poppins_medium">
-                    {item.rating}
-                  </span>
+                <div className="flex items-center justify-between mt-2 gap-3">
+                  <h3 className="text-[16px] text-gray-800 poppins_medium leading-8">
+                    {item.productName}
+                  </h3>
                 </div>
 
                 <p
-                  className="text-gray-500 text-sm leading-7 mt-4 flex-1 overflow-hidden poppins_regular"
+                  className="text-gray-500 text-sm leading-7 mt-2 poppins_regular overflow-hidden"
                   style={{
                     display: "-webkit-box",
                     WebkitLineClamp: 3,
@@ -216,17 +210,43 @@ export default function OurMenuPage() {
                   {item.description}
                 </p>
 
-                <div className="flex justify-between items-center mt-8 pt-5 border-t border-gray-200">
-                  <h4 className="text-2xl text-red-600 poppins_medium">
-                    {item.price}
-                  </h4>
-                  <motion.button
-                   whileHover={{ scale: 1.05 }}
-                   whileTap={{ scale: 0.95 }}
-                   className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full text-sm md:text-base transition-all duration-300 shadow-md hover:shadow-red-300 poppins_regular flex items-center gap-2">
-                    <ShoppingCart size={18} />
-                    Add
-                  </motion.button>
+                <div className="mt-auto pt-6">
+                  <div className="flex items-end justify-between gap-4">
+                    <div className="flex flex-col">
+                      <h4 className="text-2xl text-red-600 poppins_semiBold leading-tight flex items-center gap-1">
+                        <IndianRupee size={20} />
+                        {item.discountPrice}
+                      </h4>
+                      <span className="text-gray-400 line-through text-sm poppins_regular flex items-center gap-1">
+                        <IndianRupee size={14} />
+                        {item.productPrice}
+                      </span>
+                    </div>
+
+                    {!cartSelector.find(
+                      (cartId) => cartId?._id == item?._id
+                    ) ? (
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-full text-sm md:text-base transition-all duration-300 shadow-md hover:shadow-red-300 poppins_regular flex items-center gap-2 whitespace-nowrap"
+                        onClick={(e) => addToCart(e, item)}
+                      >
+                        <ShoppingCart size={18} />
+                        Add
+                      </motion.button>
+                    ) : (
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-full text-sm md:text-base transition-all duration-300 shadow-md hover:shadow-red-300 poppins_regular flex items-center gap-2 whitespace-nowrap"
+                        onClick={(e) => removeToCart(e, item)}
+                      >
+                        <Trash2 size={18} />
+                        Remove
+                      </motion.button>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>

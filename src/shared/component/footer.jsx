@@ -2,7 +2,8 @@ import instagramIcon from '../../assets/img/instagram.png'
 import facebookIcon from '../../assets/img/facebook.png'
 import twitterIcon from '../../assets/img/twitter-logo.png'
 
-import logo from '../../assets/logo/pizzaStreet-main-logo.png'
+import logo from '../../assets/logo/white_logo.png'
+import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
@@ -21,11 +22,11 @@ export default function Footer() {
         </div>
         <div>
           <h3 className="font-bold text-lg mb-2">Quick Links</h3>
-          <ul className="poppins-regular text-1xl">
-            <li className='mt-4'>Home</li>
-            <li className='mt-4'>Our Menu</li>
-            <li className='mt-4'>About Us</li>
-            <li className='mt-4'>Cart</li>
+          <ul>
+            <li className='mt-4'><Link to={'/'} className="poppins-regular text-1xl">Home</Link></li>
+            <li className='mt-4'><Link to={'/ourMenu'} className="poppins-regular text-1xl">Our Menu</Link></li>
+            <li className='mt-4'><Link to={'/about'} className="poppins-regular text-1xl mt-6">About Us</Link ></li>
+            <li className='mt-4'><Link to={'/cart'} className="poppins-regular text-1xl">Cart</Link></li>
           </ul>
         </div>
         <div>
@@ -39,7 +40,7 @@ export default function Footer() {
       </div>
 
       <hr className="my-8 border-red-400" />
-      <div className="flex justify-end poppins-regular text-sm">
+      <div className="flex text-center poppins-regular text-sm">
         <p>&copy; {new Date().getFullYear()} Your PizzaStreet. All rights reserved.</p>
       </div>
     </footer>

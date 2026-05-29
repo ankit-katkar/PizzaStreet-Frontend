@@ -15,7 +15,7 @@ export default function AdminRoutes() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/productList" element={<ProductList />} />
           <Route path="/add-product" element={<AddUpdateProduct />} />
-          <Route path="/update-product/:id" element={<AddUpdateProduct />} />
+          <Route path="/update-product/:productId" element={<AddUpdateProduct />} />
         </Routes>
       </Suspense>
     </>
