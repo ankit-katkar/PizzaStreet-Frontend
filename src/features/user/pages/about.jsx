@@ -8,7 +8,7 @@ import {
   ShieldCheck,
   Clock3,
 } from "lucide-react";
-import pizza from "../../../assets/img/03.png";
+import pizza from "../../../assets/img/pizza3.png";
 
 
 export default function About() {

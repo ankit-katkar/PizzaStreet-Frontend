@@ -40,7 +40,7 @@ export default function Footer() {
       </div>
 
       <hr className="my-8 border-red-400" />
-      <div className="flex text-center poppins-regular text-sm">
+      <div className="flex justify-center items-center text-center poppins-regular text-sm">
         <p>&copy; {new Date().getFullYear()} Your PizzaStreet. All rights reserved.</p>
       </div>
     </footer>
