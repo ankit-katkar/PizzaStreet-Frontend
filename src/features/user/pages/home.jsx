@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ShoppingCart, Star, ArrowRight, IndianRupee, Trash2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+
 import httpService from "../../../shared/services/httpService";
 import apiConfig from "../config/apiConfig";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,19 +9,17 @@ import { addItem, removeItem } from "../../../redux/slice.js";
 import CustomPopup from '../../../shared/component/customPopup.jsx'
 
 // 👉 Assets (use your real images)
-import pizza from "../../../assets/img/02.png";
-import pizza2 from "../../../assets/img/03.png";
-import pizza3 from "../../../assets/img/01.png";
-import pizza4 from "../../../assets/img/04.png";
-import thumb1 from "../../../assets/img/2.png";
-import thumb2 from "../../../assets/img/4.png";
-import thumb3 from "../../../assets/img/1.png";
-import thumb4 from "../../../assets/img/4.png";
-import tomatos from "../../../assets/img/image.png";
-import leaf from "../../../assets/img/1.png";
-import leaf1 from "../../../assets/img/leaf.png";
-import tamato from "../../../assets/img/tomato.png";
+import pizza2 from "../../../assets/img/pizza2.png";
+import pizza3 from "../../../assets/img/pizza3.png";
+import leaf from "../../../assets/img/leaf.png";
+import leaf1 from "../../../assets/img/leaf1.png";
+import leaf2 from "../../../assets/img/leaf2.png";
+import leaf3 from "../../../assets/img/leaf3.png";
+import leaf4 from "../../../assets/img/leaf4.png";
+import tomato1 from "../../../assets/img/tomato1.png";
+import tomato2 from "../../../assets/img/tomato2.png";
 import onionSlice from "../../../assets/img/onionSlice.png";
+
 import { useNavigate } from "react-router-dom";
 
 export default function Home() {
@@ -42,8 +41,8 @@ export default function Home() {
       setMostSellingProduct(response.data);
     }
   };
-  
-   const onViewProduct = (productId) => {
+
+  const onViewProduct = (productId) => {
     navigate('/productDetail/' + productId);
   };
 
@@ -94,36 +93,85 @@ export default function Home() {
     }
   }
 
-  const viewMenu = ()=> {
+  const viewMenu = () => {
     navigate('/ourMenu');
   }
 
+  const containerRef = useRef(null);
+
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  });
+
+  const pizzaY = useTransform(scrollYProgress, [0, 1], [0, 780]);
+
+  const pizzaX = useTransform(
+    scrollYProgress,
+    [0, 0.5, 1],
+    [0, -80, -700]
+  );
+
+  const pizzaScale = useTransform(
+    scrollYProgress,
+    [0, 0.5, 1],
+    [1, 0.88, 0.75]
+  );
+
+  const pizzaRotate = useTransform(
+    scrollYProgress,
+    [0, 1],
+    [0, -360]
+  );
+
   return (
     <>
-      <div className="flex py-30 h-200 px-6 md:px-20 relative overflow-hidden">
+  <div ref={containerRef} className="relative bg-white">
+      <motion.div
+        style={{
+          y: pizzaY,
+          x: pizzaX,
+          scale: pizzaScale,
+          rotate: pizzaRotate,
+        }}
+        className="absolute top-30 right-[6%] md:right-[10%] z-30 pointer-events-none"
+      >
+        <img
+          src={pizza2}
+          alt="pizza"
+          className="h-64 w-64 sm:h-72 sm:w-72 md:h-80 md:w-80 lg:h-96 lg:w-96 drop-shadow-2xl"
+        />
+      </motion.div>
+
+      <section className="flex py-30 h-200 px-6 md:px-20 relative overflow-hidden">
         <div className="flex-1">
           <div className="absolute top-20 left-20 w-40 h-20 rotate-180">
-            <img src={leaf1} className="w-200 h-32" />
+            <img src={leaf} className="w-200 h-32" />
           </div>
+
           <div className="absolute top-20 left-125 w-40 h-20 rotate-12">
-            <img src={tamato} className="w-200 h-32" />
+            <img src={tomato2} className="w-200 h-32" />
           </div>
+
           <div className="text-5xl md:text-7xl poppins_bold leading-tight mt-20">
             <span className="red">Pizza</span> Street
           </div>
+
           <div className="poppins_medium text-3xl mt-3 leading-tight">
             Handmade, With an Extra <br />
             Pinch of <span className="red">Love</span>
           </div>
+
           <p className="poppins_regulr text-1xl mt-4">
             Gather your friends and family and enjoy the best pizza in town.
             Freshly made and delivered hot!
           </p>
+
           <button
             className="bg-red-600 hover:bg-red-700 text-white text-sm sm:text-base md:text-lg lg:text-xl
-              font-regular px-4 py-2 sm:px-5 sm:py-3 md:px-6 md:py-3 transition-all box-border border border-transparent 
-              rounded-full duration-300 mt-10 poppins_regular"
-          onClick={viewMenu}
+            font-regular px-4 py-2 sm:px-5 sm:py-3 md:px-6 md:py-3 transition-all box-border border border-transparent 
+            rounded-full duration-300 mt-10 poppins_regular"
+            onClick={viewMenu}
           >
             View Menu
           </button>
@@ -156,66 +204,39 @@ export default function Home() {
         </div>
 
         <div className="absolute top-30 right-110 w-40 h-20 rotate-12">
-          <img src={tomatos} className="w-200 h-32" />
+          <img src={tomato1} className="w-200 h-32" />
         </div>
+
         <div className="absolute top-120 right-120 w-16 h-10 rotate-45">
-          <img src={thumb3} className="w-16 h-10" />
+          <img src={leaf1} className="w-16 h-10" />
         </div>
+
         <div className="flex-1 relative flex justify-center items-center">
-          <div className="absolute -right-100 -bottom-20 w-170 h-170 bg-red-500 rounded-full z-0"></div>{" "}
-          <img
-            src={pizza}
-            alt="pizza"
-            className="relative z-10 bottom-10 -right-10 h-90 w-90 drop-shadow-2xl"
-          />
-          <div className="absolute top-20 right-0 rotate-45 w-20 h-10">
-            <img src={thumb1} className="w-12 h-16" />
+          <div className="absolute -right-100 -bottom-20 w-170 h-170 bg-red-500 rounded-full z-0"></div>
+
+          <div className="absolute top-10 -right-5 rotate-45 w-20 h-10">
+            <img src={leaf2} className="w-12 h-16" />
           </div>
-          <div className="absolute bottom-36 right-10 rotate-45 w-20 h-10">
-            <img src={thumb2} className="w-12 h-16" />
+
+          <div className="absolute bottom-36 right-10 rotate-45 w-30 h-10">
+            <img src={leaf3} className="w-20 h-16" />
           </div>
         </div>
+
         <div className="absolute bottom-10 left-160 -rotate-12 w-30 h-18">
           <img src={onionSlice} className="w-30 h-28" />
         </div>
+
         <div className="absolute top-150 right-20 w-50 h-50">
-          <img src={pizza2} className="w-50 h-50" />
+          <img src={pizza3} className="w-50 h-50" />
         </div>
-      </div>
+      </section>
 
-      <div className="items-center py-20 px-5 sm:px-8 md:px-14 lg:px-20 relative overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-          <motion.div
-            initial={{ opacity: 0, x: -70 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="lg:col-span-5 flex justify-center relative"
-          >
-            <div className="relative">
-              <div className="absolute inset-0 bg-red-100 rounded-full blur-3xl"></div>
-
-              <img
-                src={pizza}
-                alt="pizza"
-                className="relative w-72 sm:w-80 md:w-96 h-auto drop-shadow-2xl border-2 p-4 rounded-full border-red-600 hover:scale-105 transition-all duration-500"
-              />
-
-              <div className="absolute -bottom-6 -left-6 w-20 sm:w-24 rotate-[-15deg]">
-                <img
-                  src={tamato}
-                  alt="tomato"
-                  className="w-full object-contain"
-                />
-              </div>
-
-              <div className="absolute -top-6 -right-6 w-16 sm:w-20 rotate-12">
-                <img src={leaf1} alt="leaf" className="w-full object-contain" />
-              </div>
-            </div>
-          </motion.div>
-
-          {/* About */}
+      <section className="py-20 px-5 sm:px-8 md:px-14 lg:px-20 relative min-h-screen flex items-center overflow-visible">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center w-full">
+          <div className="lg:col-span-5 relative min-h-125">
+            <div className="absolute left-0 top-0 w-full h-full"></div>
+          </div>
 
           <motion.div
             initial={{ opacity: 0, x: 70 }}
@@ -257,13 +278,18 @@ export default function Home() {
                   Fast Delivery
                 </p>
               </div>
+
               <div className="absolute bottom-78 right-30 w-40 h-25 rotate-12">
-                <img src={tamato} />
+                <img src={tomato2} />
               </div>
             </div>
           </motion.div>
         </div>
-      </div>
+      </section>
+    </div>
+
+
+
 
       {/* Our menu  */}
 
@@ -313,7 +339,7 @@ export default function Home() {
 
         <div className="relative z-10 flex justify-center mt-16">
           <button className="bg-red-600 hover:bg-red-700 text-white px-10 py-4 rounded-full shadow-xl shadow-red-100 transition-all duration-300 hover:scale-105 poppins_medium"
-           onClick={viewMenu}>
+            onClick={viewMenu}>
             View Full Menu
           </button>
         </div>
@@ -344,7 +370,7 @@ export default function Home() {
               }}
               whileHover={{ y: -10 }}
               className="bg-white rounded-3xl border border-gray-100 shadow-lg hover:shadow-2xl overflow-hidden group transition-all duration-300 flex flex-col"
-               onClick={() => onViewProduct(item._id)}
+              onClick={() => onViewProduct(item._id)}
             >
               <div className="relative h-64 flex justify-center items-center overflow-hidden p-6">
                 <div className="absolute top-5 left-5 bg-red-600 text-white text-xs px-4 py-2 rounded-full poppins_medium">
@@ -381,7 +407,7 @@ export default function Home() {
 
                   <div
                     className={`text-xs sm:text-sm px-4 py-1.5 rounded-full min-w-21.25 sm:min-w-23.75 inline-flex items-center justify-center whitespace-nowrap font-medium
-                    ${item.foodType === "VEG" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700" }`}
+                    ${item.foodType === "VEG" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
                   >
                     {item.foodType}
                   </div>
