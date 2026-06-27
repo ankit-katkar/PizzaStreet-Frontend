@@ -3,8 +3,8 @@ import { ArrowRight } from "lucide-react";
 import logo from "../../../assets/logo/pizzaStreet-main-logo.png";
 import loginHttpService from "../service/loginHttpSercice";
 
-export default function Login({ onVerifyContact }) {
-  const [mobileNumber, setMobileNumber] = useState("7420998599");
+export default function Login({ onVerifyContact, getOtp }) {
+  const [mobileNumber, setMobileNumber] = useState("");
 
   const handleMobileNumber = (e) => {
     let value = e.target.value.replace(/\D/g, "");
@@ -26,6 +26,7 @@ export default function Login({ onVerifyContact }) {
       if (response) {
         loginHttpService.setContactNumber(response.data.contactNumber)
         onVerifyContact(mobileNumber);
+        getOtp(response.data.otp)
       }
     } catch (error) {
       console.log("OTP ERROR:", error);

@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 import About from "./pages/about";
+import ProtectedRoute from "../../shared/route-guard/protectedRoute";
 
 const Home = lazy(() => import("./pages/home"));
 const OurMenuPage = lazy(() => import("./pages/ourMenu"));
@@ -22,8 +23,8 @@ export default function UserRoutes() {
          <Route path="/productDetail/:productId" element={<ProductDetailPage />} />
          <Route path="/cart" element={<CartPage />} />
          <Route path="/searchProduct" element={<SearchProduct />} />
-         <Route path="/checkout" element={<CheckoutPage />} />
-         <Route path="/userProfile" element={<UserProfile />} />
+         <Route path="/checkout" element={<ProtectedRoute Component={CheckoutPage} />} />
+         <Route path="/userProfile" element={<ProtectedRoute Component={UserProfile} />} />
          <Route path="/about" element={<About />} />
         </Routes>
       </Suspense>
