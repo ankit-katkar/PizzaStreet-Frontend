@@ -26,6 +26,17 @@ export default function Header() {
     type: "",
     message: "",
   });
+  const [otp, setOtp] = useState()
+
+  useEffect(() => {
+    if (otp) {
+      setCustomAlert({
+        isOpen: true,
+        type: "success",
+        message: `Your verification code is: ${otp}`,
+      })
+    }
+  }, [otp])
 
   useEffect(() => {
     const role = localStorage.getItem("loginUserRole");
@@ -78,6 +89,12 @@ export default function Header() {
     setIsMenuOpen(false);
   };
 
+  const receiveOtp = (data) => {
+    if (data !== 'undefined') {
+      setOtp(data)
+    }
+  }
+
   const openLoginModal = () => {
     setIsLoginModalOpen(true);
     setShowVerifyOTP(false);
@@ -89,6 +106,15 @@ export default function Header() {
     setShowVerifyOTP(false);
     setShowSetProfileName(false);
   };
+
+  useEffect(() => {
+    const openLoginModalFromRouteGuard = () => {
+      openLoginModal();
+    };
+
+    window.addEventListener("openLoginModal", openLoginModalFromRouteGuard);
+    return () => window.removeEventListener("openLoginModal", openLoginModalFromRouteGuard);
+  }, []);
 
   const handleSendOTP = () => {
     setShowVerifyOTP(true);
@@ -359,7 +385,7 @@ export default function Header() {
             )}
 
             {!showVerifyOTP && !showSetProfileName && (
-              <Login onVerifyContact={handleSendOTP} />
+              <Login onVerifyContact={handleSendOTP} getOtp={receiveOtp} />
             )}
 
             {showVerifyOTP && !showSetProfileName && (

@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
+import ProtectedRoute from "../../shared/route-guard/protectedRoute";
 
 const Dashboard = lazy(() => import("./pages/dashboard"));
 const ProductList = lazy(() => import("./pages/product-list"));
@@ -12,10 +13,10 @@ export default function AdminRoutes() {
         fallback={<div className="flex justify-center mt-20">Loading...</div>}
       >
         <Routes>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/productList" element={<ProductList />} />
-          <Route path="/add-product" element={<AddUpdateProduct />} />
-          <Route path="/update-product/:productId" element={<AddUpdateProduct />} />
+          <Route path="/dashboard" element={ < ProtectedRoute Component={Dashboard} />} />
+          <Route path="/productList" element={<ProtectedRoute Component={ProductList} />} />
+          <Route path="/add-product" element={<ProtectedRoute Component={AddUpdateProduct} />} />
+          <Route path="/update-product/:productId" element={<ProtectedRoute Component={AddUpdateProduct} />} />
         </Routes>
       </Suspense>
     </>
