@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Plus,
@@ -22,7 +22,6 @@ export default function ProductList() {
   const reducter = useDispatch()
 
   const [productData, setProductData] = useState([]);
-  const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({});
   const [searchString, setSearchString] = useState("");
@@ -38,44 +37,39 @@ export default function ProductList() {
     message: "",
   });
 
-  useEffect(() => {
-    getProductData();
-  }, []);
-
-  useEffect(() => {
-    getProductData();
-  }, [currentPage]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setCurrentPage(1);
-      getProductData();
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchString]);
-
-  const getProductData = async () => {
+  const getProductData = useCallback(async () => {
     let query = '?page=' + currentPage;
-
     if (searchString.trim()) {
       query += '&searchString=' + searchString;
     }
     const response = await httpService.getService(apiConfig.getProduct + query);
-    if (response.status == true) {
-      setProductData(response.data.docs);
+    if (response?.status === true) {
+      setProductData(response.data.docs || []);
       setPagination({
         hasNextPage: response.data.hasNextPage,
-        hasPrevPage: response.data,
+        hasPrevPage: response.data.hasPrevPage,
         limit: response.data.limit,
         nextPage: response.data.nextPage,
         page: response.data.page,
         pagingCounter: response.data.pagingCounter,
         prevPage: response.data.prevPage,
         totalDocs: response.data.totalDocs,
-        totalPages: response.data.totalPages
-      })
+        totalPages: response.data.totalPages,
+      });
     }
+  }, [currentPage, searchString]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      getProductData();
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [currentPage, searchString, getProductData]);
+
+  const handleSearchChange = (event) => {
+    setSearchString(event.target.value);
+    setCurrentPage(1);
   };
 
   const addProduct = () => {
@@ -147,7 +141,7 @@ export default function ProductList() {
               type="text"
               placeholder="Search product..."
               value={searchString}
-              onChange={(e) => setSearchString(e.target.value)}
+              onChange={handleSearchChange}
               className="w-full h-13 rounded-2xl border border-gray-300 pl-12 pr-4 outline-none focus:border-red-500 transition-all duration-300"
             />
 
@@ -178,7 +172,7 @@ export default function ProductList() {
         className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden"
       >
         <div className="overflow-x-auto">
-          <table className="min-w-[1600px] w-full border-collapse">
+          <table className="min-w-400 w-full border-collapse">
             <thead className="bg-red-600 text-white">
               <tr>
                 <th className="text-left px-6 py-5 text-sm font-semibold">
@@ -221,7 +215,7 @@ export default function ProductList() {
                   Product Description
                 </th>
 
-                <th className="sticky right-0 bg-red-600 z-20 text-left px-6 py-5 text-sm font-semibold min-w-[180px] shadow-[-4px_0_10px_rgba(0,0,0,0.08)]">
+                <th className="sticky right-0 bg-red-600 z-20 text-left px-6 py-5 text-sm font-semibold min-w-45 shadow-[-4px_0_10px_rgba(0,0,0,0.08)]">
                   Actions
                 </th>
               </tr>

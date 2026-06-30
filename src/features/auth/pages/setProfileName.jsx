@@ -9,9 +9,12 @@ export default function SetProfileName({ onBack, onSaveProfile }) {
     e.preventDefault();
 
     const contactNumber = loginHttpService.getContactNumber();
+    const loginUserId = localStorage.getItem('loginUserId')
     const payload = {
+      userId: loginUserId,
       contactNumber: contactNumber,
       userName: userName,
+      userRole:"User"
     };
     const response = await loginHttpService.httpPostService( "auth/setProfile", payload );
     if (response.status == true) {
