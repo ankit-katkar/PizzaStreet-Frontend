@@ -34,25 +34,31 @@ export default function AddUpdateProduct() {
   });
 
   useEffect(() => {
-    getProductById()
+    if (productId) {
+      getProductById()
+    }
   }, [productId])
 
   const getProductById = async () => {
-    const response = await httpService.getService(apiConfig.getProductById + productId)
-    const result = response.data
-    setProductImage({
-      imageUrl: result.productImage.imageUrl,
-      imageName: result.productImage.imageName
-    });
-    setPreview(result.productImage.imageUrl)
-    setProductName(result.productName);
-    setProductPrice(result.productPrice);
-    setDiscount(result.discount);
-    setCategory(result.category);
-    setFoodType(result.foodType)
-    setStock(result.productStock)
-    setDescription(result.description)
+    try {
+      const response = await httpService.getService(apiConfig.getProductById + productId)
+      const result = response?.data || response || {}
 
+      setProductImage({
+        imageUrl: result?.productImage?.imageUrl || "",
+        imageName: result?.productImage?.imageName || ""
+      });
+      setPreview(result?.productImage?.imageUrl || "")
+      setProductName(result?.productName || "");
+      setProductPrice(result?.productPrice || "");
+      setDiscount(result?.discount || "");
+      setCategory(result?.category || "");
+      setFoodType(result?.foodType || "")
+      setStock(result?.productStock || "")
+      setDescription(result?.description || "")
+    } catch (error) {
+      console.error("Failed to load product", error);
+    }
   }
 
   const handleImageChange = async (e) => {
